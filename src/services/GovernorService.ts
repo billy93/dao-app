@@ -32,6 +32,42 @@ export class GovernorService{
         return await this.contract.votingPeriod()
     }
 
+    public enumerateProposalState = (state: number) => {
+        const proposalStates = ['Pending', 'Active', 'Canceled', 'Defeated', 'Succeeded', 'Queued', 'Expired', 'Executed'];
+        return proposalStates[state];
+    };
+  
+    public async getProposals(){
+        let filter = this.contract.filters.ProposalCreated();
+        const proposalCreatedEvents = await this.contract.queryFilter(filter, 0, 'latest');
+    
+          // proposals.reverse();
+          // proposalStates.reverse();
+          // proposalCreatedEvents.reverse();
+    
+          // console.log('proposals', proposals)
+          // console.log('proposalStates', proposalStates)
+        //   console.log('proposalCreatedEvents', proposalCreatedEvents)
+    
+          let proposals = [];
+          for(let i=0;i<proposalCreatedEvents.length;i++){
+            var d = proposalCreatedEvents[i];
+            console.log(d);
+            if(d.args != undefined){
+                var id = d.args.proposalId;
+                var proposal = await this.contract.proposals(id);
+                var state = await this.contract.state(id);
+
+                let newProposal = Object.assign({}, proposal);
+                newProposal.state = this.enumerateProposalState(state);
+                newProposal.title = d.args.description;
+                newProposal.description = d.args.description;
+                proposals.push(newProposal);
+            }
+          }
+        return proposals;
+    }
+
     public async getToken(){
         return await this.tokenContract.balanceOf(this.account);
     }
