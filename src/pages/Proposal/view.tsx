@@ -96,8 +96,8 @@ export const ProposalView = () => {
                             <a className="nav-item nav-link" id="nav-against-tab" data-toggle="tab" href="#nav-against" role="tab" aria-controls="nav-against" aria-selected="false">Against</a>
                             <a className="nav-item nav-link" id="nav-abstain-tab" data-toggle="tab" href="#nav-abstain" role="tab" aria-controls="nav-abstain" aria-selected="false">Abstain</a>
                         </div>
-                        </nav>
-                        <div className="tab-content" id="nav-tabContent">
+                    </nav>
+                    <div className="tab-content" id="nav-tabContent">
                         <div className="tab-pane fade show active" id="nav-for" role="tabpanel" aria-labelledby="nav-for-tab">
                         <table className="table">
                             <thead>
