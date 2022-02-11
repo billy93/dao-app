@@ -15,8 +15,6 @@ export const Proposal = () => {
 
       const threshold = await governorService.getProposalThreshold();
       setProposalThreshold(threshold.toString());
-
-      await governorService.getVotingPower();
     }
   }
 

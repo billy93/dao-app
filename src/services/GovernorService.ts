@@ -24,7 +24,7 @@ export class GovernorService{
     }
 
     public async getToken(){
-
+        return await this.tokenContract.balanceOf(this.account);
     }
 
     public async getVotingPower(){
@@ -37,9 +37,11 @@ export class GovernorService{
             let d = delegations[i];
 
             if(d.args != undefined){
-                let delegate = d.args.delegate;
-                let newBalance = d.args.newBalance;
-                delegateAccounts[delegate] = newBalance;
+                if( d.args.delegate == this.account){
+                    let delegate = d.args.delegate;
+                    let newBalance = d.args.newBalance;
+                    delegateAccounts[delegate] = newBalance;    
+                }
             }
         }
 
