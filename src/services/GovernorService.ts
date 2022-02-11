@@ -22,6 +22,16 @@ export class GovernorService{
     public async getProposalThreshold() {
         return await this.contract.proposalThreshold()
     }
+    public async getQuorumVotes() {
+        return await this.contract.quorumVotes()
+    }
+
+    public async getVotingDelay() {
+        return await this.contract.votingDelay()
+    }
+    public async getVotingPeriode() {
+        return await this.contract.votingPeriod()
+    }
 
     public async getToken(){
         return await this.tokenContract.balanceOf(this.account);

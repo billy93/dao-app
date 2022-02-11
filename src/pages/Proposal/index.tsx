@@ -3,18 +3,50 @@ import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { GovernorService } from "../../services/GovernorService";
 import { supportedChain } from "../../utils";
+import Web3 from 'web3';
 
 export const Proposal = () => {
   const { account, library, chainId } = useWeb3React();
 
   const [proposalThreshold, setProposalThreshold] = useState("0");
+  const [proposalQuorumVotes, setProposalQuorumVotes] = useState("0");
+  const [proposalVoteDelayed, setProposalVoteDelayed] = useState("0");
+  const [proposalVotePeriode, setProposalVotePeriode] = useState("0");
 
   const getProposalThreshold = async() => {
     if(account && supportedChain(chainId)) {
       const governorService = new GovernorService(library, account!, chainId!);
 
       const threshold = await governorService.getProposalThreshold();
-      setProposalThreshold(threshold.toString());
+      const resThresold = Web3.utils.fromWei(threshold.toString(), 'ether')
+      setProposalThreshold(resThresold);
+    }
+  }
+  const quorumVotes = async() => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+
+      const quorum = await governorService.getQuorumVotes();
+      const res = Web3.utils.fromWei(quorum.toString(), 'ether')
+      setProposalQuorumVotes(res);
+    }
+  }
+
+  const getVoteDelayed = async() => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+
+      const voteDelay = await governorService.getVotingDelay();
+      setProposalVoteDelayed(voteDelay.toString());
+    }
+  }
+
+  const getVotePeriode = async() => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+
+      const votePeriode = await governorService.getVotingPeriode();
+      setProposalVotePeriode(votePeriode.toString());
     }
   }
 
@@ -23,6 +55,9 @@ export const Proposal = () => {
 
     if(account && supportedChain(chainId)) {
       getProposalThreshold(); 
+      quorumVotes()
+      getVoteDelayed()
+      getVotePeriode()
     }
 
     return () => {  
@@ -75,7 +110,7 @@ export const Proposal = () => {
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-green">
-                                  <h5>0</h5>
+                            <h5>{ proposalQuorumVotes}</h5>
                                 </div>
                               </div>
                               <div className="d-flex justify-content-between align-items-start align-items-sm-center mb-4 flex-column flex-sm-row">
@@ -85,7 +120,7 @@ export const Proposal = () => {
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-blue">
-                                  <h5>0</h5>
+                            <h5>{ proposalVoteDelayed}</h5>
                                 </div>
                               </div>
                               <div className="d-flex justify-content-between align-items-start align-items-sm-center mb-4 flex-column flex-sm-row">
@@ -95,7 +130,7 @@ export const Proposal = () => {
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-red">
-                                  <h5>0</h5>
+                            <h5>{ proposalVotePeriode}</h5>
                                 </div>
                               </div>
                           </div>
