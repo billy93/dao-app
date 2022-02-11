@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { TransactionResponse } from "@ethersproject/providers";
 import Web3ReactManager from './components/Web3ReactManager';
@@ -32,8 +32,26 @@ const HeaderWrapper = styled.div`
 `
 const BodyWrapper = styled.div`
 `
+const Sidebar = styled.div`
+@media (max-width: 460px) {
+    .sidebar:{
+      margin-left:20rem;
+    }
+  }
+`
+const usePrevious = (value:any) => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+};
+
 export const App = () => {
   const { addToast } = useToast();
+  const [collapse, setCollapse] = useState<boolean>(false)
+  const prevCollapse = usePrevious(collapse);
+
   const addPendingTransaction = (description: string, txResponse: TransactionResponse) => {
     txResponse.wait().then(txReceipt => {
       addToast(
@@ -42,7 +60,17 @@ export const App = () => {
         txReceipt.transactionHash)
     })
   }  
- 
+  const handleMenu = () => {
+   setCollapse(!collapse)
+  }
+  useEffect(() => {
+    var isActives = document.querySelector('.sidebar');
+    if (collapse !== prevCollapse && collapse ===true) {
+      isActives?.classList.add('sidebar-sm');
+    } else {
+      isActives?.classList.remove('sidebar-sm');
+    }
+  }, [collapse, prevCollapse])
   return (
       <HashRouter>
         <AppWrapper>
@@ -50,7 +78,10 @@ export const App = () => {
             
             
           <header className="header">
-            <nav className="navbar navbar-expand-lg px-4 py-2 bg-white shadow"><a href="#" className="sidebar-toggler text-gray-500 mr-4 mr-lg-5 lead"><i className="fas fa-align-left"></i></a><a href="/" className="navbar-brand font-weight-bold text-uppercase text-base">ROOT DAO</a>
+            <nav className="navbar navbar-expand-lg px-4 py-2 bg-white shadow">
+              <a onClick={handleMenu} className="sidebar-toggler text-gray-500 mr-4 mr-lg-5 lead">
+                <i className="fas fa-align-left"></i></a>
+              <a href="/" className="navbar-brand font-weight-bold text-uppercase text-base">ROOT DAO</a>
 
             <HeaderWrapper>
               <Header />
@@ -59,13 +90,15 @@ export const App = () => {
             </nav>
           </header>
           <div className="d-flex align-items-stretch">
+            <Sidebar>
             <div id="sidebar" className="sidebar py-3">
               <div className="text-gray-400 text-uppercase px-3 px-lg-4 py-4 font-weight-bold small headings-font-family">MAIN</div>
               <ul className="sidebar-menu list-unstyled">
                 <li className="sidebar-list-item"><a href="index.html" className="sidebar-link text-muted active"><i className="o-home-1 mr-3 text-gray"></i><span>Home</span></a></li>
                 <li className="sidebar-list-item"><a href="/#/proposal" className="sidebar-link text-muted"><i className="o-survey-1 mr-3 text-gray"></i><span>Proposals</span></a></li>
               </ul>
-            </div>
+              </div>
+              </Sidebar>
             <div className="page-holder w-100 d-flex flex-wrap">
             <BodyWrapper style={{"width":"100%"}}>
                 <Web3ReactManager>           

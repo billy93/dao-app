@@ -6,17 +6,23 @@ import { Link } from 'react-router-dom';
 export const ProposalForm = () => {
     const [value, setValue] = useState('');
     const [actions, setActions] = useState([] as any[]);
-
+  const [isSendToken, setIsSendToken] = useState<boolean>(false);
+  
     function addAction(){
       var data = actions.filter((item, idx) => {return true});
       data.push([1]);
       setActions(data);
     }
-
+  console.log('action', actions)
+  console.log('isSendToken', isSendToken)
+  const handleSubAction = (key: any) => (action: any) => {
+     setIsSendToken(true)
+   }
     function removeAction(index : any){
       const data = actions.filter((item, idx) => idx !== index);
       setActions(data);
     }
+  
     return (
         <form className="form-horizontal">
             <div className="form-group row">
@@ -68,7 +74,21 @@ export const ProposalForm = () => {
               
                       <div id={`collapse`+i} className="collapse" aria-labelledby={`heading`+i} data-parent="#accordion">
                         <div className="card-body">
-                          Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                            <div style={{display:'flex', flexDirection:'column'}}>
+                              {
+                                !isSendToken && <>
+                                 <button onClick={() =>handleSubAction('send token')(i)}>send token</button>
+                                <button>custom coin</button>
+                                </>
+                              }
+                              {
+                                isSendToken &&  
+                                <>
+                                 <label className="col-md-3 form-control-label">Target wallet address</label>
+                               <input type="text" className="form-control"/>
+                                </>
+                              }
+                          </div>
                         </div>
                       </div>
                     </div>
