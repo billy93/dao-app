@@ -1,14 +1,36 @@
 import { useWeb3React } from "@web3-react/core";
 import React, { useEffect, useState } from "react"
+import { GovernorService } from "../../services/GovernorService";
+import { supportedChain } from "../../utils";
+import  Web3 from "web3"
 // import { TOKEN_ADDRESS } from "../../constants"
 
 export const DelegateVote = () => {
-    const { account } = useWeb3React();
+  const { account, library, chainId } = useWeb3React();
     const [token, setToken] = useState(0);
-    // const tokenAddress = TOKEN_ADDRESS;
+    const [votingPower, setVotingPower] = useState(0);
+    
+    const getToken = async() => {
+      if(account && supportedChain(chainId)) {
+        const governorService = new GovernorService(library, account!, chainId!);
+        const getToken = await governorService.getToken();
+
+        const res = Web3.utils.fromWei(getToken.toString(), 'ether')
+        setToken(parseInt(res));
+      }
+    }
+
+    const getVotingPower = async() => {
+      if(account && supportedChain(chainId)) {
+        const governorService = new GovernorService(library, account!, chainId!);
+        const getVotingPower = await governorService.getVotingPower();
+        setVotingPower(getVotingPower[0].vote_weight);
+      }
+    }
 
     useEffect(() => {
-        setToken(10);
+        getToken();
+        getVotingPower();
     });
 
     return (
@@ -39,7 +61,7 @@ export const DelegateVote = () => {
                       <div className="form-group row">
                         <label className="col-md-3 form-control-label">Voting Weight</label>
                         <div className="col-md-9">
-                          <input id="inputHorizontalSuccess" readOnly={true} type="text" placeholder="Your Voting Weight" className="form-control form-control-success"/>
+                          <input id="inputHorizontalSuccess"value={votingPower} readOnly={true} type="text" placeholder="Your Voting Weight" className="form-control form-control-success"/>
                         </div>
                       </div>
                       <div className="form-group row">
