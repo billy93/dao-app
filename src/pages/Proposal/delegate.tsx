@@ -9,7 +9,9 @@ export const DelegateVote = () => {
   const { account, library, chainId } = useWeb3React();
     const [token, setToken] = useState(0);
     const [votingPower, setVotingPower] = useState(0);
-    
+    const [currentDelegate, setCurrentDelegate] = useState();
+    const [delegateAddress, setDelegateAddress] = useState("");
+
     const getToken = async() => {
       if(account && supportedChain(chainId)) {
         const governorService = new GovernorService(library, account!, chainId!);
@@ -24,13 +26,40 @@ export const DelegateVote = () => {
       if(account && supportedChain(chainId)) {
         const governorService = new GovernorService(library, account!, chainId!);
         const getVotingPower = await governorService.getVotingPower();
-        setVotingPower(getVotingPower[0].vote_weight);
+
+        let curDelegate = await governorService.getCurrentDelegate();
+        curDelegate = getVotingPower.filter(vot => {
+          return vot.delegate.toLowerCase() == curDelegate.toLowerCase();
+        });
+        setVotingPower(curDelegate[0].vote_weight);
       }
     }
+
+    const getCurrentDelegate = async() => {
+      if(account && supportedChain(chainId)) {
+        const governorService = new GovernorService(library, account!, chainId!);
+        const curDelegate = await governorService.getCurrentDelegate();
+        setCurrentDelegate(curDelegate);
+      }
+    }
+
+    const delegate = async() => {
+      const governorService = new GovernorService(library, account!, chainId!);
+      await governorService.delegate(delegateAddress);
+    }
+    
+    const delegateToSelf = async() => {
+      const governorService = new GovernorService(library, account!, chainId!);
+      if(account != null){
+        await governorService.delegate(account);
+      }
+    }
+
 
     useEffect(() => {
         getToken();
         getVotingPower();
+        getCurrentDelegate();
     });
 
     return (
@@ -55,25 +84,31 @@ export const DelegateVote = () => {
                       <div className="form-group row">
                         <label className="col-md-3 form-control-label">Token</label>
                         <div className="col-md-9">
-                          <input id="inputHorizontalSuccess" readOnly={true} type="text" placeholder="Your Token" value={token} className="form-control form-control-success"/>
+                          <input id="inputHorizontalSuccess" readOnly={true} type="text" placeholder="Your Token" value={token || ""} className="form-control form-control-success"/>
                         </div>
                       </div>
                       <div className="form-group row">
                         <label className="col-md-3 form-control-label">Voting Weight</label>
                         <div className="col-md-9">
-                          <input id="inputHorizontalSuccess"value={votingPower} readOnly={true} type="text" placeholder="Your Voting Weight" className="form-control form-control-success"/>
+                          <input id="inputVotingWeight"value={votingPower || ""} readOnly={true} type="text" placeholder="Your Voting Weight" className="form-control form-control-success"/>
+                        </div>
+                      </div>
+                      <div className="form-group row">
+                        <label className="col-md-3 form-control-label">Current Delegate</label>
+                        <div className="col-md-9">
+                          <input id="inputCurrentDelegate"value={currentDelegate || ""} readOnly={true} type="text" placeholder="Current Delegate" className="form-control form-control-success"/>
                         </div>
                       </div>
                       <div className="form-group row">
                         <label className="col-md-3 form-control-label">Delegate Address</label>
                         <div className="col-md-9">
-                          <input id="inputHorizontalSuccess" type="email" placeholder="Enter an ETH Address" className="form-control form-control-success"/>
+                          <input id="inputDelegateAddress" type="text" value={delegateAddress || ""} onChange={e => setDelegateAddress(e.target.value)} placeholder="Enter an ETH Address" className="form-control form-control-success"/>
                         </div>
                       </div>
                       <div className="form-group row">       
                         <div className="col-md-9 ml-auto">
-                          <input type="button" value="Delegate" className="btn btn-primary"/>
-                          <input type="button" value="Delegate to Self" className="btn btn-primary"/>
+                          <input type="button" value="Delegate" onClick={e => delegate()} className="btn btn-primary"/>
+                          <input type="button" value="Delegate to Self" onClick={e => delegateToSelf()} className="btn btn-primary"/>
                         </div>
                       </div>
                     </form>
