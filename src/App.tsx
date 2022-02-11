@@ -47,7 +47,6 @@ const usePrevious = (value:any) => {
   return ref.current;
 };
 
-
 export const App = () => {
   const { addToast } = useToast();
   const [collapse, setCollapse] = useState<boolean>(false)
