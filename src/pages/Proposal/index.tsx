@@ -12,6 +12,7 @@ export const Proposal = () => {
   const [proposalQuorumVotes, setProposalQuorumVotes] = useState("0");
   const [proposalVoteDelayed, setProposalVoteDelayed] = useState("0");
   const [proposalVotePeriode, setProposalVotePeriode] = useState("0");
+  const [proposal, setProposal] : any[] = useState([]);
 
   const getProposalThreshold = async() => {
     if(account && supportedChain(chainId)) {
@@ -51,14 +52,53 @@ export const Proposal = () => {
     }
   }
 
+  const getProposals = async() => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+
+      const proposals = await governorService.getProposals();
+      setProposal(proposals);
+    }
+  }
+
+  const listProposals = proposal.map((p: any, i : any) =>
+      <tr key={p.id}>
+        <th scope="row">{i+1}</th>
+        <td>{p.title}</td>
+        <td>{p.state}</td>
+        <td>
+
+        {Web3.utils.fromWei(p.forVotes.toString(), 'ether')}
+                                        
+        </td>
+        <td>
+        {Web3.utils.fromWei(p.againstVotes.toString(), 'ether')}
+        </td>
+        <td>
+        {Web3.utils.fromWei(p.abstainVotes.toString(), 'ether')}
+        </td>
+        <td>
+        {Web3.utils.fromWei(p.againstVotes.add(p.forVotes).add(p.abstainVotes).toString(), 'ether')}
+        </td>
+        <td>
+            <div className="btn-group" role="group" aria-label="Basic example">
+                <Link to={'/proposal/view/'+p.id.toString()}>                            
+                  <button type="button" className="btn btn-primary">View</button>
+                </Link>
+            </div>
+        </td>
+      </tr>
+  );
+
   useEffect(() => {
     let abortController = new AbortController();  
 
     if(account && supportedChain(chainId)) {
-      getProposalThreshold(); 
+      getProposalThreshold()
       quorumVotes()
       getVoteDelayed()
       getVotePeriode()
+      getProposals()
     }
 
     return () => {  
@@ -89,15 +129,13 @@ export const Proposal = () => {
                         </div>
                     </nav>
                     <div className="tab-content" id="nav-tabContent">
-
-                      
                         <div className="tab-pane fade show active" id="nav-parameter" role="tabpanel" aria-labelledby="nav-parameter-tab">
 
                           <div className="card-body">
                               <div className="d-flex justify-content-between align-items-start align-items-sm-center mb-4 flex-column flex-sm-row">
                                 <div className="left d-flex align-items-center">
                                   <div className="text">
-                                    <h6 className="mb-0 d-flex align-items-center"> <span>Proposal threshold</span><span className="dot dot-sm ml-2 bg-violet"></span></h6><small className="text-gray">Account renewal</small>
+                                    <h6 className="mb-0 d-flex align-items-center"> <span>Proposal threshold</span><span className="dot dot-sm ml-2 bg-violet"></span></h6>
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-violet">
@@ -107,7 +145,7 @@ export const Proposal = () => {
                               <div className="d-flex justify-content-between align-items-start align-items-sm-center mb-4 flex-column flex-sm-row">
                                 <div className="left d-flex align-items-center">
                                   <div className="text">
-                                    <h6 className="mb-0 d-flex align-items-center"> <span>Quorum needed</span><span className="dot dot-sm ml-2 bg-green"></span></h6><small className="text-gray">Software cost</small>
+                                    <h6 className="mb-0 d-flex align-items-center"> <span>Quorum needed</span><span className="dot dot-sm ml-2 bg-green"></span></h6>
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-green">
@@ -117,7 +155,7 @@ export const Proposal = () => {
                               <div className="d-flex justify-content-between align-items-start align-items-sm-center mb-4 flex-column flex-sm-row">
                                 <div className="left d-flex align-items-center">
                                   <div className="text">
-                                    <h6 className="mb-0 d-flex align-items-center"> <span>Proposal delay</span><span className="dot dot-sm ml-2 bg-blue"></span></h6><small className="text-gray">Shopping</small>
+                                    <h6 className="mb-0 d-flex align-items-center"> <span>Proposal delay</span><span className="dot dot-sm ml-2 bg-blue"></span></h6>
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-blue">
@@ -127,7 +165,7 @@ export const Proposal = () => {
                               <div className="d-flex justify-content-between align-items-start align-items-sm-center mb-4 flex-column flex-sm-row">
                                 <div className="left d-flex align-items-center">
                                   <div className="text">
-                                    <h6 className="mb-0 d-flex align-items-center"> <span>Voting length</span><span className="dot dot-sm ml-2 bg-red"></span></h6><small className="text-gray">Software cost</small>
+                                    <h6 className="mb-0 d-flex align-items-center"> <span>Voting length</span><span className="dot dot-sm ml-2 bg-red"></span></h6>
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-red">
@@ -198,85 +236,13 @@ export const Proposal = () => {
                           <th>Status</th>
                           <th>For</th>
                           <th>Against</th>
+                          <th>Abstain</th>
                           <th>Total Votes</th>
                           <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Update fee splitter</td>
-                          <td>Active</td>
-                          <td>
-                              <div className="progress">
-                              <div className="progress-bar" role="progressbar" style={{"width": "25%"}} >25%</div>
-                              </div>                            
-                          </td>
-                          <td>
-                              <div className="progress">
-                              <div className="progress-bar bg-danger" role="progressbar" style={{"width": "25%"}} >25%</div>
-                              </div>                            
-                          </td>
-                          <td>100,000</td>
-                          <td>
-                              <div className="btn-group" role="group" aria-label="Basic example">
-                                  <Link to='/proposal/view/1'>                            
-                                    <button type="button" className="btn btn-primary">View</button>
-                                  </Link>
-                                  <button type="button" className="btn btn-warning">Update</button>
-                                  <button type="button" className="btn btn-success">Vote</button>
-                                  <button type="button" className="btn btn-danger">Cancel</button>
-                              </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td>Expand new upToken</td>
-                          <td>Queue</td>
-                          <td>
-                              <div className="progress">
-                              <div className="progress-bar" role="progressbar" style={{"width": "25%"}} >25%</div>
-                              </div>                            
-                          </td>
-                          <td>
-                              <div className="progress">
-                              <div className="progress-bar bg-danger" role="progressbar" style={{"width": "25%"}}>25%</div>
-                              </div>                            
-                          </td>
-                          <td>100,000</td>
-                          <td>
-                              <div className="btn-group" role="group" aria-label="Basic example">
-                                  <button type="button" className="btn btn-primary">View</button>
-                                  <button type="button" className="btn btn-warning">Update</button>
-                                  <button type="button" className="btn btn-success">Vote</button>
-                                  <button type="button" className="btn btn-danger">Cancel</button>
-                              </div>
-                          </td>
-                        </tr>
-                        <tr>
-                          <th scope="row">3</th>
-                          <td>Update buy/sell slippage</td>
-                          <td>Executed</td>
-                          <td>
-                              <div className="progress">
-                              <div className="progress-bar" role="progressbar" style={{"width": "25%"}}>25%</div>
-                              </div>                            
-                          </td>
-                          <td>
-                              <div className="progress">
-                              <div className="progress-bar bg-danger" role="progressbar" style={{"width": "25%"}}>25%</div>
-                              </div>                            
-                          </td>
-                          <td>100,000</td>
-                          <td>
-                              <div className="btn-group" role="group" aria-label="Basic example">
-                                  <button type="button" className="btn btn-primary">View</button>
-                                  <button type="button" className="btn btn-warning">Update</button>
-                                  <button type="button" className="btn btn-success">Vote</button>
-                                  <button type="button" className="btn btn-danger">Cancel</button>
-                              </div>
-                          </td>
-                        </tr>
+                        {listProposals}
                       </tbody>
                     </table>
                   </div>
