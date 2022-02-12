@@ -58,13 +58,12 @@ export const Proposal = () => {
 
       const proposals = await governorService.getProposals();
       setProposal(proposals);
-      console.log(proposals);
     }
   }
 
-  const listProposals = proposal.map((p: any) =>
+  const listProposals = proposal.map((p: any, i : any) =>
       <tr key={p.id}>
-        <th scope="row">1</th>
+        <th scope="row">{i+1}</th>
         <td>{p.title}</td>
         <td>{p.state}</td>
         <td>
@@ -86,9 +85,6 @@ export const Proposal = () => {
                 <Link to={'/proposal/view/'+p.id.toString()}>                            
                   <button type="button" className="btn btn-primary">View</button>
                 </Link>
-                <button type="button" className="btn btn-warning">Update</button>
-                <button type="button" className="btn btn-success">Vote</button>
-                <button type="button" className="btn btn-danger">Cancel</button>
             </div>
         </td>
       </tr>

@@ -24,14 +24,6 @@ export class GovernorService{
     }
     
     public async postPropose(params:any) {
-        // let data = {
-        //      targets: ["0x69847fCBdbf4C0465eAE38E541B8A963244f6c91","0x69847fCBdbf4C0465eAE38E541B8A963244f6c91"],
-        //     values: ["1000000000000000000","1000000000000000000"],
-        //     calldata: [ "0x" ,"0x"],
-        //     description: "test | desc"
-        // }
-        console.log('ccs', params.calldata)
-        console.log('ccs values', params.values)
         return await this.contract['propose(address[],uint256[],bytes[],string)'](params.targets, params.values, params.calldata, params.description);
     }
 
@@ -55,18 +47,9 @@ export class GovernorService{
         let filter = this.contract.filters.ProposalCreated();
         const proposalCreatedEvents = await this.contract.queryFilter(filter, 0, 'latest');
     
-          // proposals.reverse();
-          // proposalStates.reverse();
-          // proposalCreatedEvents.reverse();
-    
-          // console.log('proposals', proposals)
-          // console.log('proposalStates', proposalStates)
-        //   console.log('proposalCreatedEvents', proposalCreatedEvents)
-    
           let proposals = [];
-          for(let i=0;i<proposalCreatedEvents.length;i++){
+          for(let i=proposalCreatedEvents.length-1;i>=0;i--){
             var d = proposalCreatedEvents[i];
-            console.log(d);
             if(d.args != undefined){
                 var id = d.args.proposalId;
                 var proposal = await this.contract.proposals(id);
@@ -74,7 +57,7 @@ export class GovernorService{
 
                 let newProposal = Object.assign({}, proposal);
                 newProposal.state = this.enumerateProposalState(state);
-                newProposal.title = d.args.description;
+                newProposal.title = d.args.description.split("|")[0];
                 newProposal.description = d.args.description;
                 proposals.push(newProposal);
             }
