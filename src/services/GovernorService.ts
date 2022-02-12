@@ -3,6 +3,7 @@ import { GOVERNOR_ADDRESS, TOKEN_ADDRESS } from '../constants'
 import governorAbi from '../constants/abis/governor.json'
 import tokenAbi from '../constants/abis/tokenAbi.json'
 import { Web3Provider } from '@ethersproject/providers'
+// import Web3 from 'web3'; 
 
 export class GovernorService{
     public contract: Contract
@@ -21,6 +22,19 @@ export class GovernorService{
     public async getProposalThreshold() {
         return await this.contract.proposalThreshold()
     }
+    
+    public async postPropose(params:any) {
+        // let data = {
+        //      targets: ["0x69847fCBdbf4C0465eAE38E541B8A963244f6c91","0x69847fCBdbf4C0465eAE38E541B8A963244f6c91"],
+        //     values: ["1000000000000000000","1000000000000000000"],
+        //     calldata: [ "0x" ,"0x"],
+        //     description: "test | desc"
+        // }
+        console.log('ccs', params.calldata)
+        console.log('ccs values', params.values)
+        return await this.contract['propose(address[],uint256[],bytes[],string)'](params.targets, params.values, params.calldata, params.description);
+    }
+
     public async getQuorumVotes() {
         return await this.contract.quorumVotes()
     }
@@ -108,7 +122,6 @@ export class GovernorService{
         delegates.sort((a, b) => {
             return a.vote_weight < b.vote_weight ? 1 : -1;
         });
-
         const maxSupply = 1000;
         delegates.forEach(d => {
             d.vote_weight = (100 * ((d.vote_weight / 1e18) / maxSupply)).toFixed(6) + '%';
