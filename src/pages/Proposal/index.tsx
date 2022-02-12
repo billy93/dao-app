@@ -22,6 +22,7 @@ export const Proposal = () => {
       setProposalThreshold(resThresold);
     }
   }
+  
   const quorumVotes = async() => {
     if(account && supportedChain(chainId)) {
       const governorService = new GovernorService(library, account!, chainId!);
