@@ -85,6 +85,14 @@ export const Proposal = () => {
                 <Link to={'/proposal/view/'+p.id.toString()}>                            
                   <button type="button" className="btn btn-primary">View</button>
                 </Link>
+
+                {
+                  p.state == "Succeeded" ?
+                  <Link to={'/proposal/queue/'+p.id.toString()}>                            
+                    <button type="button" className="btn btn-warning">Queue</button>
+                  </Link>
+                  : <></>
+                }
             </div>
         </td>
       </tr>
