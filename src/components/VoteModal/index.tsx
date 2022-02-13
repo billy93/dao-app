@@ -78,13 +78,13 @@ const styleWrapper = {
   margin: '0.5rem'
 }
 interface VoteModalProps {
-    modalOpen: boolean,
-    toggleVoteModal: () => void
+  modalOpen: boolean,
+  toggleVoteModal: () => void
 }
 
 export default function VoteModal({
-    modalOpen,
-    toggleVoteModal
+  modalOpen,
+  toggleVoteModal
 }: VoteModalProps) {
   const { account, library, chainId } = useWeb3React();
   const [check, setCheck] = useState({
@@ -109,75 +109,74 @@ export default function VoteModal({
     setCheck({
       ...check,
       id,
-      checked:true
+      checked: true
     })
-}
-  function handleComment(e:any) {
-  setComment(e.target.value)
   }
-  console.log('comment', comment)
-  function handleSubmit(e:any) {
+  function handleComment(e: any) {
+    setComment(e.target.value)
+  }
+  function handleSubmit(e: any) {
     e.preventDefault();
 
     if (comment !== "") {
-      let  params = {
-      proposalId:proposalId,
-      support:check?.id ==="for" ? 0 : check.id ==="aginst" ? 1 : 2,
-      reason: comment,
+      let params = {
+        proposalId: proposalId,
+        support: check?.id === "against" ? 0 : check.id === "for" ? 1 : 2,
+        reason: comment,
       }
       postVoteParams(params)
     } else {
-       let  params = {
-      proposalId:proposalId,
-      support:check?.id ==="for" ? 0 : check.id ==="aginst" ? 1 : 2,
-       }
+      let params = {
+        proposalId: proposalId,
+        support: check?.id === "against" ? 0 : check.id === "for" ? 1 : 2,
+      }
       postVoteParamsWithoutReason(params)
     }
   }
   function getModalContent() {
 
     return (
-        <UpperSection>
-            <CloseIcon onClick={toggleVoteModal}>
-                <CloseColor />
-            </CloseIcon>
-                <HeaderRow >
-                   <h4>Voting</h4>
-                </HeaderRow>
-            <ContentWrapper>
-              <p>Choose your favorite ?</p>
-                  <div className="form-check d-flex justify-content-between align-items-center px-1" style={styleWrapper}>
-                      <label className="form-check-label">
-                        For 
-                      </label>
-            <CheckStyle><input type="checkbox" className="form-check-input" value="0" id="for" onChange={() => handleParams('for')} name="for" checked={check && check.id === "for" ? true :false}/></CheckStyle>
-                  </div>
-                  <div className="form-check d-flex justify-content-between align-items-center px-1" style={styleWrapper}>
-                    <label className="form-check-label">
-                      Against
-                    </label>
-                    <CheckStyle>
-                      <input type="checkbox" className="form-check-input" value="1"  name="against" id="against" onChange={() =>handleParams('against')} checked={check && check.id === "against" ? true :false} />
-                    </CheckStyle>
-                  </div>
-                  <div className="form-check d-flex justify-content-between align-items-center px-1" style={styleWrapper}>
-                    <label className="form-check-label">
-                      Abstain
-                    </label>
-                    <CheckStyle><input type="checkbox" className="form-check-input" value="2"  id ="abstain" onChange={(id) =>handleParams('abstain')}  name="abstain" checked={check && check.id === "abstain" ? true :false}/></CheckStyle>
-                  </div>
-                  <div className="form-group mt-1">
-                      <label htmlFor="exampleFormControlTextarea1">Add comment</label>
-                       <textarea className="form-control" id="exampleFormControlTextarea1" rows={2} onChange={handleComment}></textarea>
-                  </div>
-                   <button type="submit" className='btn btn-primary' onClick={handleSubmit}>Send</button>
-            </ContentWrapper>
-        </UpperSection>
+      <UpperSection>
+        <CloseIcon onClick={toggleVoteModal}>
+          <CloseColor />
+        </CloseIcon>
+        <HeaderRow >
+          <h4>Voting</h4>
+        </HeaderRow>
+        <ContentWrapper>
+          <p>Choose your vote</p>
+          <div className="form-check d-flex justify-content-between align-items-center px-1" style={styleWrapper}>
+            <label className="form-check-label">
+              For
+            </label>
+            <CheckStyle><input type="checkbox" className="form-check-input" value="0" id="for" onChange={() => handleParams('for')} name="for" checked={check && check.id === "for" ? true : false} /></CheckStyle>
+          </div>
+          <div className="form-check d-flex justify-content-between align-items-center px-1" style={styleWrapper}>
+            <label className="form-check-label">
+              Against
+            </label>
+            <CheckStyle>
+              <input type="checkbox" className="form-check-input" value="1" name="against" id="against" onChange={() => handleParams('against')} checked={check && check.id === "against" ? true : false} />
+            </CheckStyle>
+          </div>
+          <div className="form-check d-flex justify-content-between align-items-center px-1" style={styleWrapper}>
+            <label className="form-check-label">
+              Abstain
+            </label>
+            <CheckStyle><input type="checkbox" className="form-check-input" value="2" id="abstain" onChange={(id) => handleParams('abstain')} name="abstain" checked={check && check.id === "abstain" ? true : false} /></CheckStyle>
+          </div>
+          <div className="form-group mt-1">
+            <label htmlFor="exampleFormControlTextarea1">Add comment</label>
+            <textarea className="form-control" id="exampleFormControlTextarea1" rows={2} onChange={handleComment}></textarea>
+          </div>
+          <button type="submit" className='btn btn-primary' onClick={handleSubmit}>Send</button>
+        </ContentWrapper>
+      </UpperSection>
     )
-    }
-    return (
+  }
+  return (
     <Modal isOpen={modalOpen} onDismiss={toggleVoteModal} minHeight={false} maxHeight={90}>
-        <Wrapper>{ getModalContent()}</Wrapper>
+      <Wrapper>{getModalContent()}</Wrapper>
     </Modal>
-)
+  )
 }

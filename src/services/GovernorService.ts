@@ -6,6 +6,7 @@ import { Web3Provider } from '@ethersproject/providers'
 // import Web3 from 'web3'; 
 
 export class GovernorService{
+    
     public contract: Contract
     public tokenContract: Contract
     public account: string
@@ -28,11 +29,10 @@ export class GovernorService{
     }
     public async postvoteWithReason(params: any) {
         return await this.contract.castVoteWithReason(params.proposalId.id, params.support, params.reason);
-        //  return await this.contract.castvoteWithReason(data.proposalId, data.support, data.reason);
     }
+    
     public async postvoteWithoutReason(params: any) {
-        return await this.contract.castVoteWithReason(params.proposalId.id, params.support);
-        //  return await this.contract.castvoteWithReason(data.proposalId, data.support, data.reason);
+        return await this.contract.castVote(params.proposalId.id, params.support);
     }
 
     public async getQuorumVotes() {
@@ -44,6 +44,35 @@ export class GovernorService{
     }
     public async getVotingPeriode() {
         return await this.contract.votingPeriod()
+    }
+
+    public async getProposalById(proposalId: any) {
+        let filter = this.contract.filters.ProposalCreated();
+        const proposalCreatedEvents = await this.contract.queryFilter(filter, 0, 'latest');
+
+        let newProposal = null;
+        for(let i=proposalCreatedEvents.length-1;i>=0;i--){
+            var d = proposalCreatedEvents[i];
+            if(d.args != undefined){
+                var id = d.args.proposalId;
+                if(id == proposalId){
+                    var proposal = await this.contract.proposals(id);  
+                    var state = await this.contract.state(id);
+
+                    newProposal = Object.assign({}, proposal);
+                    newProposal.state = this.enumerateProposalState(state);
+                    newProposal.title = d.args.description.split("|")[0];
+
+                    try{
+                        newProposal.description = d.args.description.split("|")[1];          
+                    }catch(e){
+                        newProposal.description = d.args.description;
+                    }
+                    break;
+                }
+            }
+        }
+        return newProposal;
     }
 
     public enumerateProposalState = (state: number) => {
