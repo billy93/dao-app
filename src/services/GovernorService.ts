@@ -26,6 +26,14 @@ export class GovernorService{
     public async postPropose(params:any) {
         return await this.contract['propose(address[],uint256[],bytes[],string)'](params.targets, params.values, params.calldata, params.description);
     }
+    public async postvoteWithReason(params: any) {
+        return await this.contract.castVoteWithReason(params.proposalId.id, params.support, params.reason);
+        //  return await this.contract.castvoteWithReason(data.proposalId, data.support, data.reason);
+    }
+    public async postvoteWithoutReason(params: any) {
+        return await this.contract.castVoteWithReason(params.proposalId.id, params.support);
+        //  return await this.contract.castvoteWithReason(data.proposalId, data.support, data.reason);
+    }
 
     public async getQuorumVotes() {
         return await this.contract.quorumVotes()
