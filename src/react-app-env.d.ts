@@ -25,3 +25,5 @@ declare module 'jazzicon' {
     declare function toB58String(hash: Uint8Array): string
   }
   
+
+  declare module 'react-html-parser';

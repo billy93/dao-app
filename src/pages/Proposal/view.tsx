@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -13,7 +13,12 @@ import {
   } from 'chart.js';
   import { Line } from 'react-chartjs-2';
   import faker from '@faker-js/faker';
-  
+import { useWeb3React } from "@web3-react/core";
+import { supportedChain } from "../../utils";
+import { GovernorService } from "../../services/GovernorService";
+import { useParams } from "react-router-dom";
+import ReactHtmlParser from 'react-html-parser'; 
+
   ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -64,7 +69,38 @@ import {
   
 // import { TOKEN_ADDRESS } from "../../constants"
 
+export interface IProposal {
+  title: string;
+  description: string;
+}
+
 export const ProposalView = () => {
+  const { account, library, chainId } = useWeb3React();
+  const [proposal, setProposal] = useState<IProposal>();
+  let { id } = useParams();
+
+  const getProposal = async() => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+
+      const prop = await governorService.getProposalById(id);
+      console.log(prop);
+      setProposal(prop);
+    }
+  }
+
+  useEffect(() => {
+    let abortController = new AbortController();  
+
+    if(account && supportedChain(chainId)) {
+      getProposal()
+    }
+
+    return () => {  
+      abortController.abort();  
+    } 
+  },  [library, account, chainId]);
+
     return (
         <div className="container-fluid px-xl-5">
         <section className="py-5">
@@ -73,7 +109,7 @@ export const ProposalView = () => {
             <div className="col-lg-8 mb-5">
                 <div className="card">
                   <div className="card-header">
-                    <h3 className="h6 text-uppercase mb-0">Proposal #12313</h3>
+                    <h3 className="h6 text-uppercase mb-0">Proposal - {proposal?.title}</h3>
                   </div>
                   <div className="card-body">
                     <div className="chart-holder">
@@ -157,32 +193,9 @@ export const ProposalView = () => {
                         </nav>
                         <div className="tab-content" id="nav-tabContent">
                         <div className="tab-pane fade show active" id="nav-description" role="tabpanel" aria-labelledby="nav-description-tab">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Address</th>
-                                <th scope="col">Votes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                <th scope="row">1</th>
-                                <td>0x00</td>
-                                <td>100</td>
-                                </tr>
-                                <tr>
-                                <th scope="row">2</th>
-                                <td>0x01</td>
-                                <td>20</td>
-                                </tr>
-                                <tr>
-                                <th scope="row">3</th>
-                                <td>0x02</td>
-                                <td>10</td>
-                                </tr>
-                            </tbody>
-                            </table>
+                          <div className="card-body">
+                            {ReactHtmlParser(proposal?.description)}
+                          </div>
                         </div>
                         <div className="tab-pane fade" id="nav-action" role="tabpanel" aria-labelledby="nav-action-tab">
 
