@@ -30,7 +30,7 @@ export class GovernorService{
     public async postvoteWithReason(params: any) {
         return await this.contract.castVoteWithReason(params.proposalId.id, params.support, params.reason);
     }
-    
+
     public async postvoteWithoutReason(params: any) {
         return await this.contract.castVote(params.proposalId.id, params.support);
     }
@@ -44,6 +44,39 @@ export class GovernorService{
     }
     public async getVotingPeriode() {
         return await this.contract.votingPeriod()
+    }
+
+    public async getVotes(id : any){
+        let filter = this.contract.filters.VoteCast();
+        const voteCastEvents = await this.contract.queryFilter(filter, 0, 'latest');
+
+        let submittedBallots = voteCastEvents;
+        let formattedBallots: { blockNumber: number; address: any; support: string; supportAsText: string; votes: string; reason: any }[] = [];
+        console.log(id)
+        submittedBallots.forEach((ballot) => {
+            if(ballot.args != null){
+                const { voter, support, weight, proposalId, reason } = ballot.args;
+                let supportAsText = 'Against';
+                if (support == 1) {
+                    supportAsText = 'In Favor';
+                } else if (support == 2) {
+                    supportAsText = 'Abstain';
+                }
+                if (proposalId == id) {
+                    formattedBallots.push({
+                        blockNumber: ballot.blockNumber,
+                        address: voter.substring(0,4),
+                        support: support,
+                        supportAsText: supportAsText,
+                        votes: (parseFloat(weight) / 1e18).toFixed(2),
+                        reason
+                    });
+                }
+            }
+        });
+
+        formattedBallots.reverse();
+        return formattedBallots;
     }
 
     public async getProposalById(proposalId: any) {
