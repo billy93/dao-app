@@ -278,7 +278,15 @@ export const ProposalView = () => {
 
                         </div>
                         <div className="tab-pane fade" id="nav-comment" role="tabpanel" aria-labelledby="nav-comment-tab">
-
+                        <div className="card-body">
+                            {
+                              votes && votes.length > 0 && (
+                              votes.map((item:any, i:any) => (
+                                <div key={i}>{  ReactHtmlParser(item.reason)}</div>
+                            ))
+                              )
+                            }
+                          </div>
                         </div>
                         <div className="tab-pane fade" id="nav-history" role="tabpanel" aria-labelledby="nav-history-tab">
 
