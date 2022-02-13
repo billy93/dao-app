@@ -75,10 +75,23 @@ export interface IProposal {
   description: string;
 }
 
+export interface IVote{
+  blockNumber: number; 
+  address: any; 
+  support: string; 
+  supportAsText: string; 
+  votes: string; 
+  reason: any
+}
+
 export const ProposalView = () => {
   const { account, library, chainId } = useWeb3React();
   const [proposal, setProposal] = useState<IProposal>();
   const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const [votes, setVotes] = useState<any>([]);
+  const [forVotes, setForVotes] = useState<any>([]);
+  const [againstVotes, setAgainstVotes] = useState<any>([]);
+  const [abstainVotes, setAbstainVotes] = useState<any>([]);
   const toggleVoteModal = () => { setModalOpen(!modalOpen) }
   let { id } = useParams();
 
@@ -91,11 +104,61 @@ export const ProposalView = () => {
     }
   }
 
+  const getVotes = async() => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+
+      const votes = await governorService.getVotes(id);
+      setVotes(votes)
+
+      const againstVote = votes.filter(e => {
+        return e.support == "0";
+      })
+      const forVote = votes.filter(e => {
+        return e.support == "1";
+      })
+      const abstainVote = votes.filter(e => {
+        return e.support == "2";
+      })
+
+      setAgainstVotes(againstVote)
+      setForVotes(forVote)
+      setAbstainVotes(abstainVote)
+    }
+  }
+
+  const listForVotes = forVotes.map((p: any, i : any) => 
+    <tr>
+      <th scope="row">{i+1}</th>
+      <td>{p.address}</td>
+      <td>{p.votes}</td>
+    </tr>
+  );
+
+  const listAgainstVotes = againstVotes.map((p: any, i : any) => 
+    <tr>
+      <th scope="row">{i+1}</th>
+      <td>{p.address}</td>
+      <td>{p.votes}</td>
+    </tr>
+  );
+
+  const listAbstainVotes = abstainVotes.map((p: any, i : any) => 
+    <tr>
+      <th scope="row">{i+1}</th>
+      <td>{p.address}</td>
+      <td>{p.votes}</td>
+    </tr>
+  );
+
+  console.log(votes);
+
   useEffect(() => {
     let abortController = new AbortController();  
 
     if(account && supportedChain(chainId)) {
       getProposal()
+      getVotes()
     }
 
     return () => {  
@@ -141,38 +204,46 @@ export const ProposalView = () => {
                     </nav>
                     <div className="tab-content" id="nav-tabContent">
                         <div className="tab-pane fade show active" id="nav-for" role="tabpanel" aria-labelledby="nav-for-tab">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Address</th>
-                                <th scope="col">Votes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                <th scope="row">1</th>
-                                <td>0x00</td>
-                                <td>100</td>
-                                </tr>
-                                <tr>
-                                <th scope="row">2</th>
-                                <td>0x01</td>
-                                <td>20</td>
-                                </tr>
-                                <tr>
-                                <th scope="row">3</th>
-                                <td>0x02</td>
-                                <td>10</td>
-                                </tr>
-                            </tbody>
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Address</th>
+                                    <th scope="col">Votes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {listForVotes}
+                                </tbody>
                             </table>
                         </div>
                         <div className="tab-pane fade" id="nav-against" role="tabpanel" aria-labelledby="nav-against-tab">
-
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Address</th>
+                                    <th scope="col">Votes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {listAgainstVotes}
+                                </tbody>
+                            </table>
                         </div>
                         <div className="tab-pane fade" id="nav-abstain" role="tabpanel" aria-labelledby="nav-abstain-tab">
-
+                          <table className="table">
+                                <thead>
+                                    <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Address</th>
+                                    <th scope="col">Votes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {listAbstainVotes}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                   </div>
