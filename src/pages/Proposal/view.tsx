@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState}from "react"
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -13,7 +13,9 @@ import {
   } from 'chart.js';
   import { Line } from 'react-chartjs-2';
   import faker from '@faker-js/faker';
-  
+  import VoteModal from '../../components/VoteModal';
+//  import SemiTransparentButton from '../../components/SemiTransparentButton';
+
   ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -65,11 +67,16 @@ import {
 // import { TOKEN_ADDRESS } from "../../constants"
 
 export const ProposalView = () => {
+  const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const toggleVoteModal = () => { setModalOpen(!modalOpen) }
     return (
         <div className="container-fluid px-xl-5">
         <section className="py-5">
           <div className="row">
-          
+            <VoteModal
+              modalOpen={modalOpen}
+              toggleVoteModal={toggleVoteModal}
+            />
             <div className="col-lg-8 mb-5">
                 <div className="card">
                   <div className="card-header">
@@ -86,8 +93,9 @@ export const ProposalView = () => {
 
             <div className="col-lg-4 mb-5">
                 <div className="card">
-                  <div className="card-header">
-                    <h3 className="h6 text-uppercase mb-0">Votes</h3>
+                  <div className="card-header d-flex justify-content-between align-items-center">
+                          <h3 className="h6 text-uppercase mb-0">Votes</h3>
+                          <button type="submit" className="btn btn-primary" onClick={toggleVoteModal}>vote</button>
                   </div>
                   <div className="card-body">
                     <nav>
