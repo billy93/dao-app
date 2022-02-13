@@ -60,7 +60,31 @@ export const Proposal = () => {
       setProposal(proposals);
     }
   }
-
+ 
+  const proposalQueue = async (proposalId: any) => {
+    let id = {
+      proposalId:proposalId.id.toString()
+    }
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+      await governorService.postProposalToQueue(id);
+    }
+  }
+  const proposalQueueExecute = async (proposalId: any) => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+      await governorService.postProposalToExecute(proposalId.id.toString());
+    }
+  }
+  const postProposalToCancel = async (proposalId: any) => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+      await governorService.postProposalToCancel(proposalId.id.toString());
+    }
+  }
+  const handleQueue = (data:any) => {
+      proposalQueue(data)
+  }
   const listProposals = proposal.map((p: any, i : any) =>
       <tr key={p.id}>
         <th scope="row">{i+1}</th>
@@ -83,15 +107,25 @@ export const Proposal = () => {
         <td>
             <div className="btn-group" role="group" aria-label="Basic example">
                 <Link to={'/proposal/view/'+p.id.toString()}>                            
-                  <button type="button" className="btn btn-primary">View</button>
+                  <button type="button" className="btn btn-primary btn-sm">View</button>
                 </Link>
 
                 {
                   p.state == "Succeeded" ?
+                  <>
                   <Link to={'/proposal/queue/'+p.id.toString()}>                            
-                    <button type="button" className="btn btn-warning">Queue</button>
+                    <button type="button" className="btn btn-warning btn-sm" onClick={() => handleQueue(p)}>Queue</button>
                   </Link>
-                  : <></>
+                <Link to="">
+                    <button type="button" className="btn btn-primary btn-sm" onClick={() => proposalQueueExecute(p)}>Execute</button>
+                </Link>
+                <Link to="">
+                    <button type="button" className="btn btn-danger btn-sm" onClick={() => postProposalToCancel(p)}>Cancel</button>
+                 </Link>
+                  </>
+              :
+              <>
+                </>
                 }
             </div>
         </td>
