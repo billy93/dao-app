@@ -35,6 +35,18 @@ export class GovernorService{
         return await this.contract.castVote(params.proposalId.id, params.support);
     }
 
+    public async postProposalToQueue(proposalId: any) {
+        return await this.contract['queue(uint256)'](proposalId.proposalId);
+    }
+
+    public async postProposalToCancel(proposalId: any) {
+        return await this.contract['cancel(uint256)'](proposalId);
+    }
+
+    public async postProposalToExecute(proposalId: any) {
+        return await this.contract['execute(uint256)'](proposalId);
+    }
+
     public async getQuorumVotes() {
         return await this.contract.quorumVotes()
     }
