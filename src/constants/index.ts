@@ -13,7 +13,7 @@ export const NETWORK_LABELS: { [chainId in number]?: string } = {
 }
 
 export const TOKEN_ADDRESS = '0xc18B0B4BC745Eeb8c5D890b705E47E96F38d92F4';
-export const GOVERNOR_ADDRESS = '0x1ef0Bf46B37292EF54DfE49689ee0DB3013a6b97';
+export const GOVERNOR_ADDRESS = '0xdf9524E97DeFbad4C5F6753Cd93A2a01463F0A60';
 
 // export const GATEWAY_URL = 'https://gateway.pinata.cloud/ipfs/';
 // export const GATEWAY_URL = 'https://cloudflare-ipfs.com/ipfs/';

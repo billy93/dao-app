@@ -4,7 +4,7 @@ import ReactQuill from 'react-quill'
 import { Link } from 'react-router-dom';
 import { GovernorService } from "../../services/GovernorService";
 import { supportedChain } from "../../utils";
-import Web3 from 'web3';
+// import Web3 from 'web3';
 
 const usePrevious = (value: any) => {
   const ref = useRef();
@@ -62,8 +62,11 @@ export const ProposalForm = () => {
   }
 
   const handleValues = (e: any) => {
-    let valueEth = Web3.utils.toWei(e.target.value, 'ether')
-    setValues([...values, valueEth])
+    try {
+      setValues([...values, e.target.value])
+    } catch(e){
+
+    }
   }
 
   const handleSubmit = (e: any) => {
@@ -152,9 +155,9 @@ export const ProposalForm = () => {
                                   </div>
                                 </div>
                                 <div className="form-group row">
-                                  <label className="col-md-3 form-control-label">Value on<span style={{ fontWeight: 'bold' }}>$ETH</span></label>
+                                  <label className="col-md-3 form-control-label">Value on <span style={{ fontWeight: 'bold' }}>wei</span></label>
                                   <div className="col-md-9">
-                                    <input id="inputHorizontalSuccess" type="text" placeholder="0" className="form-control form-control-success" name="value" onChange={handleValues} />
+                                    <input id="inputHorizontalSuccess" type="text" className="form-control form-control-success" name="value" onChange={handleValues} />
                                   </div>
                                 </div>
                               </div>

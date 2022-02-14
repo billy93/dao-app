@@ -113,20 +113,28 @@ export const Proposal = () => {
                 {
                   p.state == "Succeeded" ?
                   <>
-                  <Link to={'/proposal/queue/'+p.id.toString()}>                            
                     <button type="button" className="btn btn-warning btn-sm" onClick={() => handleQueue(p)}>Queue</button>
-                  </Link>
-                <Link to="">
-                    <button type="button" className="btn btn-primary btn-sm" onClick={() => proposalQueueExecute(p)}>Execute</button>
-                </Link>
-                <Link to="">
-                    <button type="button" className="btn btn-danger btn-sm" onClick={() => postProposalToCancel(p)}>Cancel</button>
-                 </Link>
                   </>
               :
-              <>
-                </>
+              <></>
                 }
+
+{
+                  p.state == "Queued" ?
+                  <>
+                    <button type="button" className="btn btn-success btn-sm" onClick={() => proposalQueueExecute(p)}>Execute</button>
+                  </>
+              :
+              <></>
+                }
+
+                {
+                  p.state != "Canceled" ? 
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => postProposalToCancel(p)}>Cancel</button>
+                  :
+                  <></>
+                }
+                    
             </div>
         </td>
       </tr>
