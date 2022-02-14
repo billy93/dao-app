@@ -22,12 +22,22 @@ export const ProposalForm = () => {
   const [callData, setCalldata] = useState([] as any[]);
   const [actions, setActions] = useState([] as any[]);
   const prevAction = usePrevious(actions)
-
+ const [error, setError] = useState(false)
   const postProposal = async (params: any) => {
+    let res= {}
     if (account && supportedChain(chainId)) {
       const governorService = new GovernorService(library, account!, chainId!);
-      await governorService.postPropose(params);
+      try {
+        res = await governorService.postPropose(params);
+        if (res) {
+          window.location.reload()
+        }
+      } catch (e) {
+        console.log('e', e)
+        setError(true)
+       }
     }
+    return res
   }
 
   useEffect(() => {
@@ -78,13 +88,11 @@ export const ProposalForm = () => {
       description: title + ' | '+value
     }
     e.preventDefault()
-    try {
-      postProposal(params);
-    } catch (e) {
-      console.log(e)
-    }
+    postProposal(params);
   };
-
+  const handleClose = () => {
+   setError(false)
+ }
   return (
     <form className="form-horizontal">
       <div className="form-group row">
@@ -220,7 +228,13 @@ export const ProposalForm = () => {
 
         </div>
       </div>
-
+      {
+        error &&
+        <div className="alert alert-danger">
+            <button type="button" className="close" data-dismiss="alert" onClick={handleClose}>&times;</button>
+          <strong>Failed!</strong> create proposal is failed.
+        </div>
+     }
       <div className="form-group row">
         <div className="col-md-9 ml-auto">
           <Link to='/proposal'>

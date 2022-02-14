@@ -47,6 +47,10 @@ export class GovernorService{
         return await this.contract['execute(uint256)'](proposalId);
     }
 
+    public async getListActions(proposalId: any) {
+        return await this.contract.getActions(proposalId);
+    }
+
     public async getQuorumVotes() {
         return await this.contract.quorumVotes()
     }

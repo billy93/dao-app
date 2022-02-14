@@ -19,6 +19,7 @@ import { GovernorService } from "../../services/GovernorService";
 import { useParams } from "react-router-dom";
 import ReactHtmlParser from 'react-html-parser'; 
 import VoteModal from '../../components/VoteModal';
+import styled from 'styled-components';
 
   ChartJS.register(
     CategoryScale,
@@ -44,7 +45,15 @@ import VoteModal from '../../components/VoteModal';
       },
     },
   };
-  
+const Avatar = styled.div`
+width:40px;
+height:40px;
+background:grey;  
+border-radius:50%;
+`
+const verifyColor = {
+  color:'green'
+}
   const labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July'];
   
   export const data = {
@@ -93,6 +102,7 @@ export const ProposalView = () => {
   const [againstVotes, setAgainstVotes] = useState<any>([]);
   const [abstainVotes, setAbstainVotes] = useState<any>([]);
   const toggleVoteModal = () => { setModalOpen(!modalOpen) }
+  const [listActions, setListActions] = useState<any>([])
   let { id } = useParams();
 
   const getProposal = async() => {
@@ -101,6 +111,15 @@ export const ProposalView = () => {
 
       const prop = await governorService.getProposalById(id);
       setProposal(prop);
+    }
+  }
+
+  const getListActions = async() => {
+    if(account && supportedChain(chainId)) {
+      const governorService = new GovernorService(library, account!, chainId!);
+
+      const listActions = await governorService.getListActions(id);
+      setListActions(listActions);
     }
   }
 
@@ -151,7 +170,6 @@ export const ProposalView = () => {
     </tr>
   );
 
-  console.log(votes);
 
   useEffect(() => {
     let abortController = new AbortController();  
@@ -159,13 +177,46 @@ export const ProposalView = () => {
     if(account && supportedChain(chainId)) {
       getProposal()
       getVotes()
+      getListActions()
     }
 
     return () => {  
       abortController.abort();  
     } 
   },  [library, account, chainId]);
+ 
+  function truncate(str:string, n:any){
+  return (str.length > n) ? str.substr(0, n-1) + '...' : str;
+};
+  const WrapperAvatar = styled.div`
+  width: 50%;
+    display: flex;
+    justify-content: start;
+  `
+  const CommentBox = styled.div`
+   display: flex;
+    flex-wrap: wrap;
+    height: auto;
+    background: #d3d3d338;
+    padding: 0.5rem;
+    border-radius: 0px 0px 10px 0px;
+    font-size: 12px;
+    color: #333333b0;
+    min-height: 52px;
+    font-family: "Poppins", sans-serif;
+  `
+  const WrappCommenBox = {
+    paddingLeft: '1rem',
+    width: '100%'
+    
+  }
+  const WalletStyle = styled.div`
+  font-size:13px;
+  font-weight:600;
+  color:#333;
+  font-family: "Poppins", sans-serif;
 
+  `
     return (
         <div className="container-fluid px-xl-5">
         <section className="py-5">
@@ -275,18 +326,82 @@ export const ProposalView = () => {
                           </div>
                         </div>
                         <div className="tab-pane fade" id="nav-action" role="tabpanel" aria-labelledby="nav-action-tab">
-
+                            <div id="accordion">
+                               {
+                                  listActions.map((actions:any, i:any) =>(
+                                    <div className="card" id={``+i} key={``+i}>
+                                      <div className="card-header" id={`heading` + i}>
+                                        <div className="row">
+                                          <div className="col-auto mr-auto">
+                                            <h5 className="mb-0">
+                                              <button type="button" className="btn btn-primary" data-toggle="collapse" data-target={`#collapse` + i} aria-expanded="true" aria-controls={`collapse` + i}>
+                                                Action #{i + 1}
+                                              </button>
+                                            </h5>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div id={`collapse` + i} className="collapse" aria-labelledby={`heading` + i} data-parent="#accordion">
+                                          <div className="card-body">
+                                          {listActions?.calldatas?.map((item: any, i: any) => {
+                                            return (
+                                                <div key={i}>
+                                                    <h5>Calldatas : </h5>
+                                                    <div>{item}</div>
+                                                </div>
+                                            )
+                                          })
+                                          }
+                                          {listActions?.targets?.map((item: any, i: any) => {
+                                            return (
+                                                <div key={i}>
+                                                    <h5>Target Address : </h5>
+                                                    <div>{item}</div>
+                                                </div>
+                                            )
+                                          })
+                                          }
+                                          {listActions[1]?.map((item: any, i: any) => {
+                                            return (
+                                                <div key={i}>
+                                                    <h5>Value : </h5>
+                                                    <div>{item.toString()}</div>
+                                                </div>
+                                            )
+                                          })
+                                          }
+                                          </div>
+                                        </div>
+                                    </div>
+                                  ))
+                               }
+                            </div>
                         </div>
                         <div className="tab-pane fade" id="nav-comment" role="tabpanel" aria-labelledby="nav-comment-tab">
-                        <div className="card-body">
-                            {
-                              votes && votes.length > 0 && (
-                              votes.map((item:any, i:any) => (
-                                <div key={i}>{  ReactHtmlParser(item.reason)}</div>
-                            ))
-                              )
-                            }
-                          </div>
+                          {
+                                                votes && votes.length > 0 && (
+                                                votes.map((item:any, i:any) => (
+                                                  <div className="card-body">
+                                                    <div className="col-lg-12 col-sm-12">
+                                                         <div className="card">
+                                                        <div className="card-header d-flex justify-content-between align-items-center">                  
+                                                              <WrapperAvatar>
+                                                                  <Avatar />
+                                                                  <div style={WrappCommenBox}>
+                                                                    <WalletStyle>
+                                                                    {truncate(item.address, 30)}
+                                                                    </WalletStyle>
+                                                                    <CommentBox> {ReactHtmlParser(item?.reason)}</CommentBox>
+                                                                  </div>
+                                                              </WrapperAvatar>
+                                                             <div key={i}>Vote : {item?.support === "0" ? "For" : item?.support === "1" ? "Against" : "Abstain"}{" "}<i className="fas fa-check-circle" style={verifyColor}></i></div>
+                                                           </div>
+                                                         </div>
+                                                    </div>
+                                                 </div>
+                                              ))
+                                                )
+                                              }
                         </div>
                         <div className="tab-pane fade" id="nav-history" role="tabpanel" aria-labelledby="nav-history-tab">
 
