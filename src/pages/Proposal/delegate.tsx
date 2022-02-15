@@ -1,17 +1,28 @@
 import { useWeb3React } from "@web3-react/core";
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { GovernorService } from "../../services/GovernorService";
 import { supportedChain } from "../../utils";
-import  Web3 from "web3"
+import Web3 from "web3"
+import styled from 'styled-components';
 // import { TOKEN_ADDRESS } from "../../constants"
 
+const usePrevious = (value: any) => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+};
 export const DelegateVote = () => {
   const { account, library, chainId } = useWeb3React();
     const [token, setToken] = useState(0);
     const [votingPower, setVotingPower] = useState(0);
     const [currentDelegate, setCurrentDelegate] = useState();
     const [delegateAddress, setDelegateAddress] = useState("");
-
+   const [required, setRequired] = useState(false)
+  const [validtyAddress, setValidtyAddress] = useState(false);
+   const prevDelegateAddress = usePrevious(delegateAddress)
+  
     const getToken = async() => {
       if(account && supportedChain(chainId)) {
         const governorService = new GovernorService(library, account!, chainId!);
@@ -31,10 +42,10 @@ export const DelegateVote = () => {
         curDelegate = getVotingPower.filter(vot => {
           return vot.delegate.toLowerCase() == curDelegate.toLowerCase();
         });
-        setVotingPower(curDelegate[0].vote_weight);
+        setVotingPower(curDelegate[0]?.vote_weight);
       }
     }
-
+   
     const getCurrentDelegate = async() => {
       if(account && supportedChain(chainId)) {
         const governorService = new GovernorService(library, account!, chainId!);
@@ -42,10 +53,20 @@ export const DelegateVote = () => {
         setCurrentDelegate(curDelegate);
       }
     }
-
+   
     const delegate = async() => {
-      const governorService = new GovernorService(library, account!, chainId!);
-      await governorService.delegate(delegateAddress);
+      const validAddress = Web3.utils.isAddress(delegateAddress)
+      if (delegateAddress !== "" && validAddress) {   
+        const governorService = new GovernorService(library, account!, chainId!);
+        let res = await governorService.delegate(delegateAddress);
+        if (res) {
+          window.location.reload();
+        }
+      } else if(delegateAddress !=="" && !validAddress){
+          setValidtyAddress(true)
+      } else {
+       setRequired(true)
+      }
     }
     
     const delegateToSelf = async() => {
@@ -55,13 +76,33 @@ export const DelegateVote = () => {
       }
     }
 
-
+  useEffect(() => {
+    if (delegateAddress !== prevDelegateAddress && delegateAddress !== "" ) {
+        setRequired(false)
+        setValidtyAddress(false)
+      }
+   
+  }, [delegateAddress, prevDelegateAddress, validtyAddress])
+  
     useEffect(() => {
-        getToken();
+       getToken();
         getVotingPower();
         getCurrentDelegate();
     });
-
+  
+  const handleAddressDelegate = (e: any) => {
+    let checkValidty = Web3.utils.isAddress(e.target.value);
+        if(checkValidty){
+          setDelegateAddress(e.target.value)
+        } else {
+          setValidtyAddress(checkValidty);
+        }
+  }
+  const ValidationInput = styled.div`
+        color:red;
+        font-size:12px;
+        padding:0.4rem;
+          `
     return (
         <div className="container-fluid px-xl-5">
         <section className="py-5">
@@ -102,7 +143,11 @@ export const DelegateVote = () => {
                       <div className="form-group row">
                         <label className="col-md-3 form-control-label">Delegate Address</label>
                         <div className="col-md-9">
-                          <input id="inputDelegateAddress" type="text" value={delegateAddress || ""} onChange={e => setDelegateAddress(e.target.value)} placeholder="Enter an ETH Address" className="form-control form-control-success"/>
+                          <input id="inputDelegateAddress" type="text" value={delegateAddress || ""} onChange={handleAddressDelegate} placeholder="Enter an ETH Address" className="form-control form-control-success"/>
+                            <ValidationInput>
+                              { required   && 'Please input  delegate address ' }
+                              { validtyAddress && 'Please input valid delegate address ' }
+                            </ValidationInput>
                         </div>
                       </div>
                       <div className="form-group row">       
@@ -115,8 +160,6 @@ export const DelegateVote = () => {
                   </div>
                 </div>
               </div>
-
-            
           </div>
         </section>
       </div>
