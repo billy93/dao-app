@@ -118,8 +118,42 @@ export const ProposalView = () => {
     if(account && supportedChain(chainId)) {
       const governorService = new GovernorService(library, account!, chainId!);
 
-      const listActions = await governorService.getListActions(id);
+      const actions = await governorService.getListActions(id);
+      const listActions = [];
+      for (var i = 0; i < actions.targets.length; i++) {
+        listActions.push(<div className="card" id={``+i} key={``+i}>
+        <div className="card-header" id={`heading` + i}>
+          <div className="row">
+            <div className="col-auto mr-auto">
+              <h5 className="mb-0">
+                <button type="button" className="btn btn-primary" data-toggle="collapse" data-target={`#collapse` + i} aria-expanded="true" aria-controls={`collapse` + i}>
+                  Action #{i + 1}
+                </button>
+              </h5>
+            </div>
+          </div>
+        </div>
+        <div id={`collapse` + i} className="collapse" aria-labelledby={`heading` + i} data-parent="#accordion">
+            <div className="card-body">
+                  <div>
+                      <h5>Calldatas : </h5>
+                      <div>{actions?.calldatas[i]}</div>
+                  </div>
+                  <div>
+                      <h5>Target Address : </h5>
+                      <div>{actions?.targets[i]}</div>
+                  </div>
+                  <div>
+                      <h5>Value : </h5>
+                      <div>{actions[1][i].toString()}</div>
+                  </div>
+            </div>
+          </div>
+      </div>);
+      }
+    
       setListActions(listActions);
+
     }
   }
 
@@ -217,6 +251,7 @@ export const ProposalView = () => {
   font-family: "Poppins", sans-serif;
 
   `
+
     return (
         <div className="container-fluid px-xl-5">
         <section className="py-5">
@@ -327,54 +362,7 @@ export const ProposalView = () => {
                         </div>
                         <div className="tab-pane fade" id="nav-action" role="tabpanel" aria-labelledby="nav-action-tab">
                             <div id="accordion">
-                               {
-                                  listActions.map((actions:any, i:any) =>(
-                                    <div className="card" id={``+i} key={``+i}>
-                                      <div className="card-header" id={`heading` + i}>
-                                        <div className="row">
-                                          <div className="col-auto mr-auto">
-                                            <h5 className="mb-0">
-                                              <button type="button" className="btn btn-primary" data-toggle="collapse" data-target={`#collapse` + i} aria-expanded="true" aria-controls={`collapse` + i}>
-                                                Action #{i + 1}
-                                              </button>
-                                            </h5>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div id={`collapse` + i} className="collapse" aria-labelledby={`heading` + i} data-parent="#accordion">
-                                          <div className="card-body">
-                                          {listActions?.calldatas?.map((item: any, i: any) => {
-                                            return (
-                                                <div key={i}>
-                                                    <h5>Calldatas : </h5>
-                                                    <div>{item}</div>
-                                                </div>
-                                            )
-                                          })
-                                          }
-                                          {listActions?.targets?.map((item: any, i: any) => {
-                                            return (
-                                                <div key={i}>
-                                                    <h5>Target Address : </h5>
-                                                    <div>{item}</div>
-                                                </div>
-                                            )
-                                          })
-                                          }
-                                          {listActions[1]?.map((item: any, i: any) => {
-                                            return (
-                                                <div key={i}>
-                                                    <h5>Value : </h5>
-                                                    <div>{item.toString()}</div>
-                                                </div>
-                                            )
-                                          })
-                                          }
-                                          </div>
-                                        </div>
-                                    </div>
-                                  ))
-                               }
+                               {listActions}
                             </div>
                         </div>
                         <div className="tab-pane fade" id="nav-comment" role="tabpanel" aria-labelledby="nav-comment-tab">

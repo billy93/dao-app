@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import { GovernorService } from "../../services/GovernorService";
 import { supportedChain } from "../../utils";
 import Web3 from 'web3';
+import { GOVERNOR_ADDRESS, TOKEN_ADDRESS } from "../../constants";
 
 export const Proposal = () => {
   const { account, library, chainId } = useWeb3React();
@@ -129,7 +130,7 @@ export const Proposal = () => {
                 }
 
                 {
-                  p.state != "Canceled" ? 
+                  p.state != "Canceled" || p.state != "Executed" ? 
                   <button type="button" className="btn btn-danger btn-sm" onClick={() => postProposalToCancel(p)}>Cancel</button>
                   :
                   <></>
@@ -234,7 +235,7 @@ export const Proposal = () => {
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-violet">
-                                  <h5>0x1ef0Bf46B37292EF54DfE49689ee0DB3013a6b97</h5>
+                                  <h5>{GOVERNOR_ADDRESS}</h5>
                                 </div>
                               </div>
                               <div className="d-flex justify-content-between align-items-start align-items-sm-center mb-4 flex-column flex-sm-row">
@@ -244,7 +245,7 @@ export const Proposal = () => {
                                   </div>
                                 </div>
                                 <div className="right ml-5 ml-sm-0 pl-3 pl-sm-0 text-green">
-                                  <h5>0xc18B0B4BC745Eeb8c5D890b705E47E96F38d92F4</h5>
+                                  <h5>{TOKEN_ADDRESS}</h5>
                                 </div>
                               </div>
                           </div>
