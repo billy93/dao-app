@@ -2,7 +2,7 @@ import { useWeb3React } from "@web3-react/core";
 import React, { useState, useEffect, useRef } from 'react'
 import ReactQuill from 'react-quill'
 import { Link } from 'react-router-dom';
-import { GovernorService } from "../../services/GovernorService";
+// import { GovernorService } from "../../services/GovernorService";
 import { supportedChain } from "../../utils";
 import Web3 from 'web3';
 
@@ -14,22 +14,35 @@ const usePrevious = (value: any) => {
   return ref.current;
 };
 export const ProposalForm = () => {
-  const { account, library, chainId } = useWeb3React();
+  const { account, chainId } = useWeb3React();
   var web3 = new Web3(Web3.givenProvider)
   const [value, setValue] = useState("");
   const [title, setTitle] = useState("");
+  const [targets, setTarget] = useState([] as any[]);
+  const [targetsContractA, setTargetContractA] = useState([] as any[]);
+  const [values, setValues] = useState([] as any[]);
+  const [valuesCustom, setValuesCustom] = useState([] as any[]);
+  const [callData, setCalldata] = useState([] as any[]);
   const [actions, setActions] = useState([] as any[]);
   const prevAction = usePrevious(actions)
   const [error, setError] = useState(false)
+  const [abiFile, setAbiFile] = useState([] as any[])
+  const [visibleUploadAbi, setVisibleUploadAbi] = useState(false)
+  const [actionsPropos, setActionsPropos] = useState([] as any[])
+  const [typeOfParams, setTypeOfParams] = useState([] as any[])
+  const [, setNameOfParams] = useState([] as any[])
+  const [contract, setContract] = useState("")
+  const [actionParam, setActionParam] = useState([] as any[])
+  const prevContract = usePrevious(contract)
+  const [disabledSelectAct, setDisabledSelectAct] = useState(false)
+  // const prevDisabled = usePrevious(disabledSelectAct)
 
   const postProposal = async (params: any) => {
     if (account && supportedChain(chainId)) {
-      const governorService = new GovernorService(library, account!, chainId!);
+      // const governorService = new GovernorService(library, account!, chainId!);
       try {
-         let trx = await governorService.postPropose(params);
-         await trx.wait();
-
-        window.location.reload()
+        //  var  res = await governorService.postPropose(params);
+        // window.location.reload()
       } catch (e) {
         console.log('e', e)
         setError(true)
@@ -57,24 +70,23 @@ export const ProposalForm = () => {
     if (actions !== prevAction) {
       for (i = 0; i < actions.length; i++) {
         calldata.push("0x")
-      } 
-      // setCalldata(calldata);
+      }
+      setCalldata(calldata);
     }
 
   }, [actions, prevAction])
 
+
+  useEffect(() => {
+    if (contract !== prevContract) {
+      getTypeParam()
+      getNameParam()
+    }
+  }, [contract, prevContract])
+
   function addAction() {
-    var data = [...actions];
-    data.push({
-      tab: 1,
-      target: "",
-      value: "",
-      targetCustom: "",
-      valueCustom: "",
-      abi: null,
-      method: "",
-      params: null
-    });
+    var data = actions.filter((item, idx) => { return true });
+    data.push([1]);
     setActions(data);
   }
 
@@ -83,80 +95,54 @@ export const ProposalForm = () => {
     setActions(data);
   }
 
+
   const handleText = (e: any) => {
     setTitle(e.target.value)
   }
 
-  const selectTab = (index: any, tabIndex: any) => {
-    let data = [...actions];
-    data[index].tab = tabIndex;
-
-    if(tabIndex == 1){
-      data[index].targetCustom = "";
-      data[index].valueCustom = "";
-    }else if(tabIndex == 2){
-      data[index].target = "";
-      data[index].value = "";
-    }
-
-    setActions(data);
+  const handleTarget = (e: any) => {
+    setTarget([...targets, e.target.value])
   }
 
-  const handleTarget = (e: any, index: any) => {
-    let data = [...actions];
-    data[index].target = e.target.value;
-    setActions(data);
+  const handleValues = (e: any) => {
+    setValues([...values, e.target.value])
   }
 
-  const handleValues = (e: any, index: any) => {
-    let data = [...actions];
-    data[index].value = e.target.value;
-    setActions(data);
+  const handleValuesCustom = (e: any) => {
+    setValuesCustom([...valuesCustom, e.target.value])
   }
 
-  const handleTargetContract = (e: any, index: any) => {
-    let data = [...actions];
-    data[index].targetCustom = e.target.value;
-    setActions(data);
+  function getTypeParam() {
+    let dataTypes = actionsPropos[0]?.inputs.map((item: any, i: any) => { return item.type })
+    setTypeOfParams(dataTypes)
   }
 
-  const handleValuesCustom = (e: any, index: any) => {
-    let data = [...actions];
-    data[index].valueCustom = e.target.value;
-    setActions(data);
+  function getNameParam() {
+    let dataName = actionsPropos[0]?.inputs.map((item: any, i: any) => { return item.name })
+    setNameOfParams(dataName)
   }
 
   const handleSubmit = (e: any) => {
+    let params = {}
     e.preventDefault()
-    
-    let targets: any[] = [];
-    let values: any[] = [];
-    let signatures: any[] = [];
-    let calldata: any[] = [];;
-    let description = title + ' | ' + value;
-
-    for(let i=0;i<actions.length;i++){
-      if(actions[i].tab == 1){
-        targets.push(actions[i].target);
-        values.push(actions[i].value == "" ? "0" : actions[i].value);
-        signatures.push("");
-        calldata.push("0x");
+    if (abiFile?.length !== 0) {
+      let encode = web3.eth.abi.encodeParameters(typeOfParams, actionParam);
+      params = {
+        targets: targetsContractA,
+        values: valuesCustom,
+        signatures: [`${contract}$(actionParam,typeOfParams)`],
+        calldata: [encode],
+        description: title + ' | ' + value
       }
-      else if(actions[i].tab == 2){
-        targets.push(actions[i].targetCustom);
-        values.push(actions[i].valueCustom == "" ? "0" : actions[i].valueCustom);
-
-        let dataTypes = actions[i].params.inputs.map((item: any, i: any) => { return item.type })
-        let encode = web3.eth.abi.encodeParameters(dataTypes, actions[i].paramValues);
-
-        signatures.push(`${actions[i].method}(${dataTypes})`)
-        calldata.push(encode);
+    } else {
+      params = {
+        targets,
+        values,
+        signatures: [""],
+        calldata: callData,
+        description: title + ' | ' + value
       }
     }
-
-    let params = {
-      targets, values, signatures, calldata, description
-    };
     console.log(params)
     postProposal(params);
   };
@@ -166,68 +152,45 @@ export const ProposalForm = () => {
     window.location.reload()
   }
 
-  function onChange(event: any, index: any) {
+  function onChange(event: any) {
     var reader = new FileReader();
-
-
-    const onReaderLoad = (event: any) => {
-      console.log(event.target.result);
-      var obj = JSON.parse(event.target.result);
-  
-      let data = [...actions];
-      data[index].abi = obj;
-      setActions(data);
-    };
     reader.onload = onReaderLoad;
     reader.readAsText(event.target.files[0]);
   }
 
-  // function onReaderLoad(event: any) {
-  //   console.log(event.target.result);
-  //   var obj = JSON.parse(event.target.result);
-
-  //   let data = [...actions];
-  //   data[index].abi = e.target.value;
-  //   setActions(data);
-
-  //   // alert_data(obj.name, obj.family);
-  //   setAbiFile(obj)
-  // }
-
-  const handleActionsParam = (e: any, i: any, idx: any) => {
-    let data = [...actions];
-    data[i].paramValues[idx] = e.target.value;
-    setActions(data);
+  function onReaderLoad(event: any) {
+    console.log(event.target.result);
+    var obj = JSON.parse(event.target.result);
+    // alert_data(obj.name, obj.family);
+    setAbiFile(obj)
   }
 
+  const handleActionsParam = (e: any) => {
+    setActionParam([...actionParam, e.target.value])
+  }
+  const handleTargetContract = (e: any) => {
+    let address = e.target.value
+    setTargetContractA([...targetsContractA, e.target.value])
+    if (address?.length !== 0) {
+      setVisibleUploadAbi(true)
+      setDisabledSelectAct(false)
+    } else {
+      setVisibleUploadAbi(false)
+      setDisabledSelectAct(true)
+    }
+  }
   const verifyColor = {
     color: 'green'
   }
   const succedUpload = {
     margin: '0.5rem'
   }
-  const handleSelectFunction = (e: any, index: any) => {
-    let data = [...actions];
-    data[index].method = e.target.value;
-
-    var methodContract = data[index].abi.filter((item: { name: any; }, idx: any) => item.name === e.target.value ? item : null)
-    data[index].params = methodContract[0];
-    console.log('methods', data[index].params)
-
-    data[index].paramValues = []
-    for(let i=0;i<data[index].params.inputs.length;i++){
-      data[index].paramValues.push("");
-    }
-
-
-    setActions(data);
-    // setContract(e.target.value) 
-    // setActionsPropos(methodContract)
+  const handleSelectFunction = (e: any) => {
+    var methodContract = abiFile.filter((item, idx) => item.name === e.target.value ? item : null)
+    console.log('methods', methodContract)
+    setContract(e.target.value)
+    setActionsPropos(methodContract)
   }
-
-  // const handleActionsParam = (e: any) => {
-    // setActionParam([...actionParam, e.target.value])
-  // }
 
   return (
     <form className="form-horizontal">
@@ -278,16 +241,16 @@ export const ProposalForm = () => {
                     </div>
                   </div>
 
-                  <div id={`collapse` + i} className="collapse" aria-labelledby={`heading` + i} data-parent={`#accordion`}>
+                  <div id={`collapse` + i} className="collapse" aria-labelledby={`heading` + i} data-parent="#accordion">
                     <div className="card-body">
                       <nav>
-                        <div className="nav nav-tabs" id={"nav-tab"+i} role="tablist">
-                          <a className="nav-item nav-link active" id={'nav-parameter-tab'+i} data-toggle="tab" href={"#nav-parameter"+i} role="tab" aria-controls={"nav-parameter"+i} aria-selected="true" onClick={e => selectTab(i, 1)}>Transfer Token</a>
-                          <a className="nav-item nav-link" id={`nav-ca-tab`+i} data-toggle="tab" href={"#nav-ca"+i} role="tab" aria-controls={"nav-ca"+i} aria-selected="false" onClick={e => selectTab(i, 2)}>Add Custom Token</a>
+                        <div className="nav nav-tabs" id="nav-tab" role="tablist">
+                          <a className="nav-item nav-link active" id="nav-parameter-tab" data-toggle="tab" href="#nav-parameter" role="tab" aria-controls="nav-parameter" aria-selected="true">Transfer Token</a>
+                          <a className="nav-item nav-link" id="nav-ca-tab" data-toggle="tab" href="#nav-ca" role="tab" aria-controls="nav-ca" aria-selected="false">Add Custom Token</a>
                         </div>
                       </nav>
-                      <div className="tab-content" id={"nav-tabContent"+i}>
-                        <div className="tab-pane fade show active" id={`nav-parameter`+i} role="tabpanel" aria-labelledby={'nav-parameter-tab'+i}>
+                      <div className="tab-content" id="nav-tabContent">
+                        <div className="tab-pane fade show active" id="nav-parameter" role="tabpanel" aria-labelledby="nav-parameter-tab">
                           <div className="card-body">
                             <div className="col-lg-12 mb-5">
                               {/* <p>Remember you are delegating all your votes. To get your votes back you have to delegate to yourself again.</p> */}
@@ -295,50 +258,46 @@ export const ProposalForm = () => {
                                 <div className="form-group row">
                                   <label className="col-md-3 form-control-label bold">Target Wallet Address</label>
                                   <div className="col-md-9">
-                                    <input id="inputHorizontalSuccess" type="text" value={actions[i].target} placeholder="Enter the  target Address..." className="form-control form-control-success" name="target" onChange={e => handleTarget(e, i)} />
+                                    <input id="inputHorizontalSuccess" type="text" placeholder="Enter the  target Address..." className="form-control form-control-success" name="target" onChange={handleTarget} />
                                   </div>
                                 </div>
                                 <div className="form-group row">
                                   <label className="col-md-3 form-control-label">Value on <span style={{ fontWeight: 'bold' }}>wei</span></label>
                                   <div className="col-md-9">
-                                    <input id="inputHorizontalSuccess" type="text" value={actions[i].value} className="form-control form-control-success" name="value" onChange={e => handleValues(e, i)} />
+                                    <input id="inputHorizontalSuccess" type="text" className="form-control form-control-success" name="value" onChange={handleValues} />
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                        <div className="tab-pane fade show " id={`nav-ca`+i} role="tabpanel" aria-labelledby={`nav-ca-tab`+i}>
+                        <div className="tab-pane fade show " id="nav-ca" role="tabpanel" aria-labelledby="nav-ca-tab">
                           <div className="card-body">
                             <div className="col-lg-12 mb-5">
+                              {/* <p>Remember you are delegating all your votes. To get your votes back you have to delegate to yourself again.</p> */}
                               <div className="form-horizontal">
                                 <div className="form-group row">
                                   <label className="col-md-3 form-control-label bold">Target Contract Address</label>
                                   <div className="col-md-9">
-                                    <input id="inputHorizontalSuccess" type="text" value={actions[i].targetCustom} placeholder="Enter the  target Address..." className="form-control form-control-success" onChange={e => handleTargetContract(e, i)} />
+                                    <input id="inputHorizontalSuccess" type="text" placeholder="Enter the  target Address..." className="form-control form-control-success" onChange={handleTargetContract} />
                                   </div>
                                 </div>
                                 <div className="form-group">
-                                  <div className="file-drop-area"> 
-                                  <span className="choose-file-button">Choose files drop Abi files here</span> <span className="file-message"> </span> 
-                                  <input className="file-input" type="file" multiple onChange={e => onChange(e, i)} />
+                                  {/* <input type="file" className="form-control-file" id="exampleFormControlFile1" onChange={onChange}/> */}
+                                  <div className="file-drop-area"> <span className="choose-file-button">Choose files drop Abi files here</span> <span className="file-message"> </span> <input className="file-input" type="file" multiple onChange={onChange} disabled={!visibleUploadAbi ? true : false} />
                                   </div>
-                                  { actions[i].abi !== null &&
+                                  {abiFile?.length !== 0 &&
                                     <div style={succedUpload}>
                                       <i className="fas fa-check-circle" style={verifyColor}></i>  File uploaded
                                     </div>
-                                  } 
+                                  }
                                 </div>
                                 <div className="form-group row">
                                   <label className="col-md-3 form-control-label bold">Contract Method</label>
                                   <div className="col-md-9">
-                                    <select 
-                                    className="form-control" 
-                                    id="exampleFormControlSelect1" 
-                                    onChange={e => handleSelectFunction(e, i)} 
-                                    value={actions[i].method} >
+                                    <select className="form-control" id="exampleFormControlSelect1" onChange={handleSelectFunction} value={contract} disabled={disabledSelectAct ? true : false}>
                                       {
-                                        actions[i].abi?.map((item: any, i: any) => (
+                                        abiFile?.map((item: any, i: any) => (
                                           item.type === 'function' && <option key={i} value={item.name}>{item.name}</option>
                                         ))
                                       }
@@ -346,19 +305,23 @@ export const ProposalForm = () => {
                                   </div>
                                 </div>
                                 {
-                                    actions[i].params?.inputs?.map((act: any, idx: any) => (
-                                        <div key={idx} className="form-group row">
-                                          <label className="col-md-3 form-control-label" >{act.name}</label>
+                                  actionsPropos?.length !== 0 && (
+                                    actionsPropos[0]?.inputs?.map((actions: any, i: any) => (
+                                      <>
+                                        <div className="form-group row">
+                                          <label className="col-md-3 form-control-label" key={i}>{actions.name}</label>
                                           <div className="col-md-9">
-                                            <input id="inputHorizontalSuccess" type="text" value={actions[i].paramValues[idx]} placeholder={`please input ${act.type} ...`} className="form-control form-control-success" onChange={e => handleActionsParam(e, i, idx)} name={act.name} />
+                                            <input key={i} id="inputHorizontalSuccess" type="text" placeholder={`please input ${actions.type} ...`} className="form-control form-control-success" onChange={handleActionsParam} name={actions.name} disabled={disabledSelectAct ? true : false} />
                                           </div>
                                         </div>
-                                    ))                                  
-                                } 
+                                      </>
+                                    ))
+                                  )
+                                }
                                 <div className="form-group row">
-                                  <label className="col-md-3 form-control-label">Value on <span style={{ fontWeight: 'bold' }}>wei</span></label>
+                                  <label className="col-md-3 form-control-label">Value on<span style={{ fontWeight: 'bold' }}>$ETH</span></label>
                                   <div className="col-md-9">
-                                    <input id="inputHorizontalSuccess" type="text" value={actions[i].valueCustom} placeholder="0" className="form-control form-control-success" onChange={e => handleValuesCustom(e, i)} />
+                                    <input id="inputHorizontalSuccess" type="text" placeholder="0" className="form-control form-control-success" onChange={handleValuesCustom} />
                                   </div>
                                 </div>
                               </div>
